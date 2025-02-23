@@ -2,17 +2,20 @@
 #include <Servo.h>
 
 #define SLAVE_ADDR 0x08  // Slave I2C address
-const int pingPin = 7; // Pin for the ultrasonic sensor
-Servo myservo;        // Create Servo object to control a servo
+const int pingPin = 7;  // Pin for the ultrasonic sensor
+const int buzzerPin = 8;  // Pin for the buzzer
+Servo myservo;         // Create Servo object to control a servo
 
-int pos = 15;          // Variable to store the servo position
+int pos = 15;           // Variable to store the servo position
 long distanceInches, distanceCm;
+const int threshold = 100;  // Distance threshold in centimeters to trigger the buzzer
 
 void setup() {
-  Serial.begin(9600);   // Start serial communication for debugging (optional)
+  Serial.begin(9600);    // Start serial communication for debugging (optional)
   Wire.begin(SLAVE_ADDR);  // Start the I2C slave with the defined address
   Wire.onRequest(requestEvent);  // Attach the request event function
-  myservo.attach(9);       // Attach the servo to pin 9
+  myservo.attach(9);         // Attach the servo to pin 9
+  pinMode(buzzerPin, OUTPUT);  // Set buzzerPin as an output
 }
 
 void loop() {
@@ -36,17 +39,23 @@ void loop() {
     Serial.print(distanceCm);
     Serial.println(" cm");
 
+    // Activate buzzer if the distance is less than the threshold
+    if (distanceCm < threshold) {
+      tone(buzzerPin, 1000);  // Play sound at 1000 Hz
+    } else {
+      noTone(buzzerPin);  // Stop the sound
+    }
+
     delay(500);  // Wait a bit before the next servo movement
   }
 }
 
 void requestEvent() {
-  // Send the ultrasonic data (inches and centimeters) and servo position to the master
-  //Wire.write(distanceInches);   // Send the distance in inches (1 byte)
+  // Send the ultrasonic data (inches, centimeters) and servo position to the master
+  //Wire.write((byte*)&distanceInches, sizeof(distanceInches));  // Send distance in inches
+  Wire.write((byte*)&distanceCm, sizeof(distanceCm));          // Send distance in centimeters
+  Wire.write((byte*)&pos, sizeof(pos));                        // Send the current servo position
   
-  Wire.write(pos);               // Send the current servo position (1 byte)
-  Wire.write(distanceCm);        // Send the distance in centimeters (1 byte)
-
   // Debugging: Print sent data to the Serial Monitor
   Serial.print("Data sent: ");
   //Serial.print("Inches: ");
