@@ -45,7 +45,7 @@ void loop() {
       tone(buzzerPin, frequency, 100);  // Play sound for 100ms (short beep)
     }
 
-    delay(500);  // Wait before moving to the next position
+    delay(400);  // Wait before moving to the next position
   }
 }
 
