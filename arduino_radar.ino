@@ -2,6 +2,7 @@
 #include <Servo.h>
 
 #define SLAVE_ADDR 0x08  // Slave I2C address
+#define KEY 0X14
 const int pingPin = 7;  // Pin for the ultrasonic sensor
 const int buzzerPin = 8;  // Pin for the buzzer
 Servo myservo;         // Create Servo object to control a servo
@@ -48,12 +49,23 @@ void loop() {
   }
 }
 
+
 void requestEvent() {
   // Send the ultrasonic data (centimeters) and servo position to the master
   //Wire.write((byte*)&distanceCm, sizeof(distanceCm));          // Send distance in centimeters
   //Wire.write((byte*)&pos, sizeof(pos));                        // Send the current servo position
-  Wire.write(pos);
-  Wire.write(distanceCm);
+  byte encryptedAngleLow = (pos & 0xFF) ^ KEY;
+  byte encryptedAngleHigh = (pos >>8) ^ KEY;
+ 
+  byte encryptedDistanceLow = (distanceCm & 0xFF) ^ KEY;
+  byte encryptedDistanceHigh = (distanceCm >>8) ^ KEY;
+
+  
+  Wire.write(encryptedAngleLow);
+  Wire.write(encryptedAngleHigh);
+  Wire.write(encryptedDistanceLow);
+  Wire.write(encryptedDistanceHigh);
+  
 
   // Debugging: Print sent data to the Serial Monitor
   Serial.print("Data sent: ");
