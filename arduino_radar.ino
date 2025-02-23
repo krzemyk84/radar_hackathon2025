@@ -7,8 +7,10 @@ const int buzzerPin = 8;  // Pin for the buzzer
 Servo myservo;         // Create Servo object to control a servo
 
 int pos = 15;           // Variable to store the servo position
-long distanceInches, distanceCm;
-const int threshold = 100;  // Distance threshold in centimeters to trigger the buzzer
+long distanceCm;        // Distance in centimeters
+
+// Define maximum distance
+const int max_distance = 200; // Maximum distance in cm
 
 void setup() {
   Serial.begin(9600);    // Start serial communication for debugging (optional)
@@ -26,44 +28,44 @@ void loop() {
     // Get the distance from the ultrasonic sensor
     long duration = getDistance();
 
-    // Convert duration to distance in inches and centimeters
-    distanceInches = microsecondsToInches(duration);
+    // Convert duration to distance in centimeters
     distanceCm = microsecondsToCentimeters(duration);
 
     // Debugging: Print the distance and servo position
     Serial.print("Angle: ");
     Serial.print(pos);
     Serial.print(" degrees - ");
-    Serial.print(distanceInches);
-    Serial.print(" inches, ");
     Serial.print(distanceCm);
     Serial.println(" cm");
 
-    // Activate buzzer if the distance is less than the threshold
-    if (distanceCm < threshold) {
-      tone(buzzerPin, 1000);  // Play sound at 1000 Hz
-    } else {
-      noTone(buzzerPin);  // Stop the sound
+    // Check if the detected distance is within a valid range and trigger a beep
+    if (distanceCm > 0 && distanceCm <= max_distance) {  // Check for valid distance
+      int frequency = getFrequencyForDistance(distanceCm);  // Get frequency based on distance
+      tone(buzzerPin, frequency, 100);  // Play sound for 100ms (short beep)
     }
 
-    delay(500);  // Wait a bit before the next servo movement
+    delay(500);  // Wait before moving to the next position
   }
 }
 
 void requestEvent() {
-  // Send the ultrasonic data (inches, centimeters) and servo position to the master
-  //Wire.write((byte*)&distanceInches, sizeof(distanceInches));  // Send distance in inches
+  // Send the ultrasonic data (centimeters) and servo position to the master
   Wire.write((byte*)&distanceCm, sizeof(distanceCm));          // Send distance in centimeters
   Wire.write((byte*)&pos, sizeof(pos));                        // Send the current servo position
   
   // Debugging: Print sent data to the Serial Monitor
   Serial.print("Data sent: ");
-  //Serial.print("Inches: ");
-  //Serial.print(distanceInches);
-  Serial.print(", Cm: ");
+  Serial.print("Cm: ");
   Serial.print(distanceCm);
   Serial.print(", Servo: ");
   Serial.println(pos);
+}
+
+// Function to get the correct frequency based on the distance
+int getFrequencyForDistance(long distanceCm) {
+  // Map the distance to a frequency range (higher frequency for closer objects)
+  int frequency = map(distanceCm, 0, max_distance, 2000, 500);  // Higher frequency for closer objects
+  return frequency;
 }
 
 // Function to trigger the ultrasonic sensor and get the distance
@@ -83,11 +85,7 @@ long getDistance() {
   return duration;
 }
 
-// Functions to convert the pulse duration to distance in inches or centimeters
-long microsecondsToInches(long microseconds) {
-  return microseconds / 74 / 2;
-}
-
+// Function to convert the pulse duration to distance in centimeters
 long microsecondsToCentimeters(long microseconds) {
-  return microseconds / 29 / 2;
+  return microseconds / 29 / 2;  // Conversion factor for distance in centimeters
 }
