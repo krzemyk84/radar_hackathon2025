@@ -50,9 +50,11 @@ void loop() {
 
 void requestEvent() {
   // Send the ultrasonic data (centimeters) and servo position to the master
-  Wire.write((byte*)&distanceCm, sizeof(distanceCm));          // Send distance in centimeters
-  Wire.write((byte*)&pos, sizeof(pos));                        // Send the current servo position
-  
+  //Wire.write((byte*)&distanceCm, sizeof(distanceCm));          // Send distance in centimeters
+  //Wire.write((byte*)&pos, sizeof(pos));                        // Send the current servo position
+  Wire.write(pos);
+  Wire.write(distanceCm);
+
   // Debugging: Print sent data to the Serial Monitor
   Serial.print("Data sent: ");
   Serial.print("Cm: ");
