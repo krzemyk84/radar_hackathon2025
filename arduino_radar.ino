@@ -22,7 +22,7 @@ void setup() {
 }
 
 void loop() {
-  for (pos = 30; pos <= 150; pos += 15) {  // Sweep the servo from 30 to 150 degrees
+  for (pos = 30; pos <= 150; pos += 15) {  // Sweep the servo from 30 to 150 degrees 
     myservo.write(pos);  // Move the servo to the current position
     delay(100);  // Wait for the servo to reach the position
 
