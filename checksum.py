@@ -57,15 +57,17 @@ def main():
 		# Define the serial port and baud rate (Ensure it matches the Arduino setting)
 		#ser = serial.Serial('COM5', 9600, timeout=1)  # Replace 'COM3' with your port (Linux/macOS: '/dev/ttyUSB0')
 		time.sleep(2)  # Allow time for the connection to establish
+		Start_Scan = False
 
 		# Window size
-		WIDTH, HEIGHT = 800, 480
+		WIDTH, HEIGHT = 1000, 600
 		screen = pygame.display.set_mode((WIDTH, HEIGHT))
 		pygame.display.set_caption("120° Radar Scan")
-
+	
+		
 		# Radar propertieswith 
-		CENTER = (400,480)  # Radar center
-		RADIUS = 480  # Radar radius
+		CENTER = (500,550)  # Radar center
+		RADIUS = 500  # Radar radius
 		SWEEP_SPEED = 7.5 # Speed of scanning (degrees per frame)
 		#OBJECT_COUNT = 10  # Number of detected objects
 
@@ -74,6 +76,9 @@ def main():
 		GREEN = (0, 255, 0)
 		DARK_GREEN = (0, 100, 0)
 		RED = (255, 0, 0)
+		BLUE = (0,0,255)
+		RED = (255,0,0)
+	
 
 		objects = []
 
@@ -109,8 +114,8 @@ def main():
 		direction = 1 
 		previous_x = 0
 		previous_y = 0
-		arc_centre_x, arc_centre_y = 400,480
-		base_radius = 480
+		arc_centre_x, arc_centre_y = 500,550
+		base_radius = 500
 		arc_start_angle = 29
 		arc_end_angle = 151
 		
@@ -119,6 +124,12 @@ def main():
 		
 		while running:
 			screen.fill(BLACK)
+			font_1=pygame.font.SysFont("Arial",25)
+			text_1 = "Observe Tracking System"
+			text_colour_1 = (255,255,0)
+			text_surface_1 = font_1.render(text_1,True,text_colour_1)
+			text_rect_1 = text_surface_1.get_rect(center=(500,25))
+			screen.blit(text_surface_1,text_rect_1)
 			# Draw radar semi-circle
 			for i in range (5):
 				arc_radius = base_radius - i * 90
@@ -155,11 +166,11 @@ def main():
 				screen.blit(obj_surface, (obj["x"] - 5, obj["y"] - 5))  # Center object
 
 				# Display angle and distance
-				pygame.draw.rect(screen,BLACK,(550,400,250,80))
+				pygame.draw.rect(screen,BLACK,(750,550,250,80))
 				font = pygame.font.SysFont("Arial",20)
 				text = f"{int(obj['angle'])}° | {int(obj['distance'])} cm"
 				text_surface = font.render(text, True, (0,255,0))
-				screen.blit(text_surface, text_surface.get_rect(center=(700,460)))
+				screen.blit(text_surface, text_surface.get_rect(center=(850,570)))
 
 			# Calculate scanning line position
 				end_x = CENTER[0] + RADIUS * math.cos(math.radians(obj['angle']))
@@ -189,13 +200,15 @@ def main():
 
 
 		#input from Sensor
+		
 
-
-
+		pygame.display.flip()
+		pygame.time.delay(50)  # Control frame rate
 		time.sleep(1)
 
 if __name__=="__main__":
 	main()
 	
+
 
 
