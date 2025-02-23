@@ -49,30 +49,30 @@ void loop() {
   }
 }
 
-
+// Function to send encrypted data with a checksum
 void requestEvent() {
-  // Send the ultrasonic data (centimeters) and servo position to the master
-  //Wire.write((byte*)&distanceCm, sizeof(distanceCm));          // Send distance in centimeters
-  //Wire.write((byte*)&pos, sizeof(pos));                        // Send the current servo position
   byte encryptedAngleLow = (pos & 0xFF) ^ KEY;
-  byte encryptedAngleHigh = (pos >>8) ^ KEY;
- 
+  byte encryptedAngleHigh = (pos >> 8) ^ KEY;
   byte encryptedDistanceLow = (distanceCm & 0xFF) ^ KEY;
-  byte encryptedDistanceHigh = (distanceCm >>8) ^ KEY;
+  byte encryptedDistanceHigh = (distanceCm >> 8) ^ KEY;
 
+  // Calculate checksum (XOR of all bytes)
+  byte checksum = (encryptedAngleLow ^ encryptedAngleHigh ^ encryptedDistanceLow ^ encryptedDistanceHigh) % 256;
   
+  // Send encrypted data with checksum
   Wire.write(encryptedAngleLow);
   Wire.write(encryptedAngleHigh);
   Wire.write(encryptedDistanceLow);
   Wire.write(encryptedDistanceHigh);
-  
+  Wire.write(checksum);  // Append checksum
 
   // Debugging: Print sent data to the Serial Monitor
-  Serial.print("Data sent: ");
-  Serial.print("Cm: ");
+  Serial.print("Data sent: Cm: ");
   Serial.print(distanceCm);
   Serial.print(", Servo: ");
-  Serial.println(pos);
+  Serial.print(pos);
+  Serial.print(", Checksum: ");
+  Serial.println(checksum, HEX);
 }
 
 // Function to get the correct frequency based on the distance
@@ -84,7 +84,6 @@ int getFrequencyForDistance(long distanceCm) {
 
 // Function to trigger the ultrasonic sensor and get the distance
 long getDistance() {
-  // Trigger the ultrasonic sensor
   pinMode(pingPin, OUTPUT);
   digitalWrite(pingPin, LOW);
   delayMicroseconds(2);
@@ -92,7 +91,6 @@ long getDistance() {
   delayMicroseconds(5);
   digitalWrite(pingPin, LOW);
 
-  // Read the echo from the sensor
   pinMode(pingPin, INPUT);
   long duration = pulseIn(pingPin, HIGH);  // Get the pulse duration
 
@@ -103,3 +101,4 @@ long getDistance() {
 long microsecondsToCentimeters(long microseconds) {
   return microseconds / 29 / 2;  // Conversion factor for distance in centimeters
 }
+ 
